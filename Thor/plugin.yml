@@ -1,0 +1,8 @@
+name: sss-Thor
+main: sss.RjSowden.Thor.Thor
+version: 2.1
+
+commands:
+  Thor:
+      description: Use /Thor followed by the event that you want to happen when you click
+      usage: /Thor [argument]
