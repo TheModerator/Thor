@@ -1,9 +1,20 @@
+/* Thor.java
+ *  extended from RjSowden by Filbert66, using new ThorPower enum
+ * TODO:
+ *   - Item names must match configurable string as well as ID.
+ * History
+ * 28 Nov 2012: Added list, clear commands; added Explode.power config
+ *   			Rewrite give to avoid destroying current item in hand, and also add enchant.
+ * 29 Nov 2012: Added loadPowerConfig(), .quantity.
+ */
+
 package sss.RjSowden.Thor;
 
 import java.util.HashMap;
 
 import java.util.logging.Logger;
 
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,185 +22,187 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-
+import org.bukkit.ChatColor;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ShapedRecipe;
 
 public class Thor extends JavaPlugin {
 	
-	Logger log = Logger.getLogger("Minecraft");
-	
+	static Logger log;	
 	static boolean leftclick = false;
 	static int wandID = 0;
-	public static HashMap<Player, Integer> PlayerMode = new HashMap<Player, Integer>();
+	static Double xPower = 4D;
+	public static HashMap<Player, ThorPower> PlayerMode = new HashMap<Player, ThorPower>();
+	public static HashMap<Player, Long>      lastTimes = new HashMap<Player, Long>();
+	static ItemStack thorHammer = new ItemStack (wandID, 1);
 	
 	public void onEnable(){ 
-		log.info("THOR is loading...");
+		log = this.getLogger();
+
+		//log.info("THOR is loading...");
 		
-		PluginManager pm = this.getServer().getPluginManager();
-		getServer().getPluginManager().registerEvents(new ThorPlayerListener(), this);
+		this.getServer().getPluginManager().registerEvents(new ThorPlayerListener(this), this);
 		
 		if(getConfig().getBoolean("DO_NOT_EDIT.READY") == false){
-			log.info("[Thor]: No config file found. Creating...");
-		getConfig().set("Wand.itemID", 275);
-		getConfig().set("Wand.leftclick", false);
-		getConfig().set("DO_NOT_EDIT.READY", true);
-		this.saveConfig();
-		getConfig().set("DO_NOT_EDIT.READY", true);
-		getConfig().set("Wand.itemID", 275);
-		getConfig().set("Wand.leftclick", false);
-		this.saveConfig();
-		log.info("[Thor]: Done");
-		this.reloadConfig();
+			log.info("No config file found. Creating...");
+			getConfig().set("Wand.itemID", Material.STONE_AXE.getId());
+			getConfig().set("Wand.leftclick", false);
+			getConfig().set("explode.power", xPower);
+			getConfig().set("DO_NOT_EDIT.READY", true);
+			this.saveDefaultConfig();
+			log.info("Done");
 		}
 		leftclick = getConfig().getBoolean("Wand.leftclick");
 		wandID = getConfig().getInt("Wand.itemID");
-		log.info("THOR is Loaded");
-	}
-	 
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
+		thorHammer.setTypeId (wandID);
+		thorHammer.addEnchantment (Enchantment.DURABILITY,1);
+		// Add thorHammer.setName("Mjollnir");
 		
-			
-			if (args.length < 1){
-				sender.sendMessage("�e### Sowden Software Systems - Bukkit Plugins ###");
-				sender.sendMessage("�eERROR found whilst using THOR");
-				sender.sendMessage("�eNot enough Arguments");
-				sender.sendMessage("�eUse /Thor [power]");
-				return false; 
-			}
-			
-			if (args[0].equalsIgnoreCase("stop")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),0);
-				sender.sendMessage("�2Thor Powers Stopped");
-				return true; 
-			}
-			if (args[0].equalsIgnoreCase("lightning")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),1);
-				if (leftclick == true){
-				sender.sendMessage("�2Left click to use send lightning");
-				} else {
-					sender.sendMessage("�2Right click to use send lightning");
-				}
-				return true; 
-			}		
-			if (args[0].equalsIgnoreCase("explode")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),2);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click to cause explosion");
-					} else {
-						sender.sendMessage("�2Right click to cause explosion");
-					}
-				return true; 
-			}	
-			if (args[0].equalsIgnoreCase("wolves")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),3);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click to spawn wolves");
-					} else {
-						sender.sendMessage("�2Right click to spawn wolves");
-					}
-				return true; 
-			}	
-			if (args[0].equalsIgnoreCase("teleport")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),4);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click location to teleport to");
-					} else {
-						sender.sendMessage("�2Right click location to teleport to");
-					}
-				return true; 
-			}	
-			if (args[0].equalsIgnoreCase("fireball")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),5);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click to throw a fireball");
-					} else {
-						sender.sendMessage("�2Right click to throw a fireball");
-					}
-				return true; 
-			}	
-			if (args[0].equalsIgnoreCase("fire")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),6);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click what you want to set on fire");
-					} else {
-						sender.sendMessage("�2Right click what you want to set on fire");
-					}
-				return true; 
-			}
-			if (args[0].equalsIgnoreCase("fire")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),6);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click what you want to set on fire");
-					} else {
-						sender.sendMessage("�2Right click what you want to set on fire");
-					}
-				return true; 
-			}	
-			if (args[0].equalsIgnoreCase("obliterate")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),7);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click the area you want to obliterate");
-					} else {
-						sender.sendMessage("�2Right click the area you want to obliterate");
-					}
-				return true; 
-			}
-			if (args[0].equalsIgnoreCase("del") | args[0].equalsIgnoreCase("delete")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),8);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click what you want to set on fire");
-					} else {
-						sender.sendMessage("�2Right click what you want to set on fire");
-					}
-				return true; 
-			}	
-			if (args[0].equalsIgnoreCase("power")){
-				PlayerMode.put(getServer().getPlayer(sender.getName()),9);
-				if (leftclick == true){
-					sender.sendMessage("�2Left click the block you want to toggle redstone power");
-					} else {
-						sender.sendMessage("�2Right click block area you want to toggle redstone power");
-					}
-				return true; 
-			}
-			if (args[0].equalsIgnoreCase("help")){
-				sender.sendMessage("### Sowden Software Systems - Bukkit Plugins ###");
-				sender.sendMessage(" You asked for help?");
-				sender.sendMessage("   Actions in your version are");
-				sender.sendMessage("   Stop, Lightning, Explode, Wolves, Teleport, Fireball, Fire, Obliterate, Del/Delete, Power");
-				return true; 
-			}	
-			if (args[0].equalsIgnoreCase("give")){
-				sender.sendMessage("   Here is the hammer you can use to wreak havoc with!");
-				Player master = (Player) sender;
-				ItemStack item = master.getItemInHand();
-				item.setTypeId(wandID);
-				item.setAmount(1);
-				master.setItemInHand(item);
-				if (leftclick == true){
-					sender.sendMessage("use a LEFT CLICK, as specified in the config");
-					} else {
-						sender.sendMessage("use a RIGHT CLICK, as specified in the config");
-					}
-				return true; 
-			}	
+		for (ThorPower p : ThorPower.values()) {
+			loadPowerConfig (p.getCommand());
+		}
+		// Power-specific config items
+		getConfig().getInt ("creeper.quantity");	
+		log.config ("wolf quantity is " + getConfig().getInt ("wolves.quantity"));		
+		xPower = getConfig().getDouble("explode.power");
+
+		addRecipes();
+		//log.info("THOR is Loaded");
+	}
+	
+	private void loadPowerConfig (String node) {
+		// this doesn't really do anything other than load into RAM
+		getConfig().getShortList (node + ".durability");  //casting impact to item durability
+		getConfig().getInt (node + ".cooldown");	//required cooldown period in seconds
+		getConfig().getInt (node + ".itemID");		// different item ID if desired
+		getConfig().getInt (node + ".range");		// how far can this be cast
+	}
+	
+	private void addRecipes () {
+		ShapedRecipe hammerRCP = new ShapedRecipe (thorHammer);
+		hammerRCP.shape(new String[] { "ABA", " C ", " C " });
+		hammerRCP.setIngredient('A', Material.ANVIL);
+		hammerRCP.setIngredient('B', Material.NETHER_STAR);
+		hammerRCP.setIngredient('C', Material.IRON_INGOT);
+		getServer().addRecipe(hammerRCP);
+		
+		/* Add recipes for lesser-powered (single-powered) items?, using easier core items:
+		 *  Teleport - ender eye
+		 *  Fire - blaze powder, fire aspect enchant
+		 *  Fireball - ghast tear, fire aspect enchant, L2
+		 *  explosion - wither skull, 
+		 *  napalm - fire charge (made by blaze powder, coal, gunpowder), fire aspect enchant		  
+		 *  Alternative shape for "easy" ingredients: shape(new String[] { "ABA", " C ", " C " }):
+			 *  Creeper - gunpowder x 5 
+			 *  wolf - bonemeal x 5
+			 *  lightning - redstone x 5 
+		 */
+	}
+
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
+	{
+		String command;
+		
+		if (args.length < 1 && (sender instanceof Player)){
 			sender.sendMessage("### Sowden Software Systems - Bukkit Plugins ###");
-			sender.sendMessage(" ERROR found whilst using THOR");
-			sender.sendMessage("   Unknown arguement. Current known arguments are:");
-			sender.sendMessage("   Stop, Lightning, Explode, Wolves, Teleport, Fireball, Fire, Obliterate, Del/Delete, Power");
+			sender.sendMessage("Not enough Arguments");
+			return false; 
+		}
+		else {
+			command = (args.length >0) ? args[0].toLowerCase() : "list"; // implied command for console
+		}
+
+		if ( !sender.hasPermission ("thor." + command) && 
+			!command.equals ("stop") && !command.equals ("help") )
+		{
+			sender.sendMessage ("Thor: You do not have permission to " + command);
+			log.info (sender.getName() + " illegally attemped " + command + " command");
+			return true;
+		}
+		
+			/*
+			 * Console-allowable commands
+			 */
+			if (command.equals("clear")) {
+				PlayerMode.clear();
+				return true;
+			}			
+			if (command.equals("list"))  
+			{ 
+				sender.sendMessage ("Players currently with Thor powers:");
+				for (Player p : Thor.PlayerMode.keySet()) {
+					sender.sendMessage (p.getName() + ": " + Thor.PlayerMode.get(p).getCommand());
+				}
+				sender.sendMessage ("Players who have used Thor powers:");
+				long currTime = System.currentTimeMillis();
+				for (Player p : Thor.lastTimes.keySet()) {
+					double minutesAgo = (currTime - Thor.lastTimes.get(p))/1000/60.0D;
+					sender.sendMessage (p.getName() + ": " + minutesAgo + " minutes ago");
+				}
+				return true;				
+			}
+			if (command.equals("help")){
+				sender.sendMessage(ChatColor.YELLOW + "### Sowden Software Systems - Bukkit Plugins ###");
+				sender.sendMessage(ChatColor.YELLOW + " You asked for help?");
+				sender.sendMessage(ChatColor.YELLOW + "   Actions in your version are:");
+				sender.sendMessage(ChatColor.YELLOW + "   " + ThorPower.commandList + "list, stop, clear, help, give");
+				return true; 
+			}	
+		
+			if ( !(sender instanceof Player)) {
+				sender.sendMessage ("Thor " + command + " not a valid option from console");
+				return true;
+			}		
+			// else we know we have a Player
+			Player player = (Player)sender;
 			
+			if (command.equals("stop")){
+				if (PlayerMode.containsKey (player)) {
+					PlayerMode.remove (player);
+					sender.sendMessage(ChatColor.RED + "Thor Powers Stopped");
+				} else {
+					sender.sendMessage ("You have no Thor powers");
+				}
+
+				return true; 
+			}
+			for (ThorPower power : ThorPower.values()) {
+				if (command.equals (power.getCommand())) {
+					PlayerMode.put(player,power);
+					sender.sendMessage (ChatColor.UNDERLINE + (leftclick ? "Left" : "Right") + ChatColor.RESET + " click to " + power.getPhrase());
+					return true;
+				}
+			}
+
+			if (command.equals("give")){
+				ItemStack item = player.getItemInHand(); // can be empty
+				if (item != null) { // try to store in inventory
+					int slot = player.getInventory().firstEmpty();
+					if (slot != -1)
+						player.getInventory().setItem (slot, item);
+					else {
+						sender.sendMessage ("Unable to store " + item.getType() + " from hand. " + ChatColor.RED + "Inventory full");
+						return true;
+					}
+				}
+				
+				// Now give item
+				sender.sendMessage(ChatColor.YELLOW + "Here is Mjollnir. Use responsibly!");
+				// Be nice to give it a name "Mjollnir", but what's the API?
+				player.setItemInHand (thorHammer);
+				sender.sendMessage("use a " + ChatColor.UNDERLINE + (leftclick ? "Left" : "Right") + ChatColor.RESET + " CLICK, as specified in the config");
+				return true; 
+			}	
+			sender.sendMessage(ChatColor.YELLOW + "### Sowden Software Systems - Bukkit Plugins ###");
+			sender.sendMessage(ChatColor.YELLOW + "   Unknown arguement:" + command);
 			
 			return false;
-			
-		
 	}
-	
-	
-	
-	
-	
-	
-	public void onDisable(){ 
 		
+	public void onDisable(){ 
+		PlayerMode.clear();
+		lastTimes.clear();
 		
 		log.info("THOR disabled");
 	}

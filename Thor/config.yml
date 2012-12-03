@@ -1,0 +1,60 @@
+Wand:
+  itemID: 275
+  leftclick: false
+
+wolves:
+  durability: 6
+  cooldown: 0
+  itemID: 0
+  range: 256
+  quantity: 2
+creeper:
+  durability: 10
+  cooldown: 0
+  itemID: 0
+  range: 256
+  quantity: 1
+fire:
+  durability: 1
+  cooldown: 0
+  itemID: 0
+  range: 256
+napalm:
+  durability: 2
+  cooldown: 0
+  itemID: 0
+  range: 256
+fireball:
+  durability: 4
+  cooldown: 0
+  itemID: 0
+  range: 256
+teleport:
+  durability: 1
+  cooldown: 0
+  itemID: 0
+  range: 256
+explode:
+  durability: 12
+  cooldown: 0
+  itemID: 0
+  range: 256
+  power: 3.0
+lightning:
+  durability: 6
+  cooldown: 0
+  itemID: 0
+  range: 256
+power:
+  durability: 1
+  cooldown: 0
+  itemID: 0
+  range: 256
+delete:
+  durability: 3
+  cooldown: 1
+  itemID: 0
+  range: 256
+
+DO_NOT_EDIT:
+  READY: true

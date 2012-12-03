@@ -1,8 +1,56 @@
-name: sss-Thor
+name: Thor
 main: sss.RjSowden.Thor.Thor
-version: 2.1
+version: 3.1
+authors: [Filbert66, RjSowden]
+description: Thor by RjSowden mod by Filbert66. Item-based godlike powers
 
 commands:
   Thor:
-      description: Use /Thor followed by the event that you want to happen when you click
-      usage: /Thor [argument]
+      description: /Thor <power>|stop|give|clear|list
+      usage: /Thor [lighting|fire|fireball|napalm|wolves|teleport|explode|creeper|delete|stop|give|clear|list]
+
+permissions:
+  thor.*:
+    description: Gives access to ALL Thor features
+    children:
+      thor.lightning: true
+      thor.fire: true
+      thor.fireball: true
+      thor.wolves: true
+      thor.teleport: true
+      thor.explode: true
+      thor.give: true
+      thor.clear: true
+      thor.list: true
+#      thor.power: true
+      thor.delete: true
+  thor.lightning:
+    description: Allows user to use hammer to throw lightning
+    default: op
+  thor.fire:
+    description: Allows user to use hammer to start fires remotely
+    default: op
+  thor.fireball:
+    description: Allows user to use hammer to throw fireballs or napalm (small fireballs)
+    default: op
+  thor.wolves:
+    description: Allows user to use hammer to spawn wolves
+    default: op
+  thor.teleport:
+    description: Allows user to use hammer to teleport to target
+    default: op
+  thor.explode:
+    description: Allows user to use hammer to trigger explosions
+    default: op
+  thor.clear:
+    description: Allows user to reset all users' Thor powerss
+    default: op
+  thor.list:
+    description: Display all users' current Thor powers
+    default: op
+  thor.delete:
+    description: Allows user to delete a block from a distance
+    default: op
+#  thor.power:
+#    description: Allows user to toggle redstone power 
+#    default: op
