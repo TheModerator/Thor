@@ -1,0 +1,12 @@
+Thor/bin/*
+Thor/create
+
+*.class
+
+Thor/src/sss/RjSowden/Thor/build
+
+Thor/testprep
+
+Thor/update
+
+Thor/src/sss/RjSowden/Thor/old/*

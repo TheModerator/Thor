@@ -1,29 +1,42 @@
 name: Thor
 main: sss.RjSowden.Thor.Thor
-version: 3.1
+version: 4.0
 authors: [Filbert66, RjSowden]
-description: Thor by RjSowden mod by Filbert66. Item-based godlike powers
+description: Thor by Filbert66, started by RjSowden. Item-based godlike powers
 
 commands:
   Thor:
       description: /Thor <power>|stop|give|clear|list
-      usage: /Thor [lighting|fire|fireball|napalm|wolves|teleport|explode|creeper|delete|stop|give|clear|list]
+      usage: /Thor [lightning|fire|fireball|napalm|wolves|teleport|explode|creeper|cow|zombie|enderman|dragon|skeleton|villager|pigman|wither|bats|delete|stop|give|clear|list]
 
 permissions:
   thor.*:
     description: Gives access to ALL Thor features
     children:
-      thor.lightning: true
-      thor.fire: true
-      thor.fireball: true
-      thor.wolves: true
-      thor.teleport: true
-      thor.explode: true
       thor.give: true
       thor.clear: true
       thor.list: true
-#      thor.power: true
+
+      thor.lightning: true
+      thor.explode: true
+      thor.wolves: true
+      thor.teleport: true
+      thor.fireball: true
+      thor.fire: true
+      thor.creeper: true
+      thor.napalm: true
       thor.delete: true
+#      thor.power: true
+      thor.zombie: true
+      thor.enderman: true
+      thor.dragon: true
+      thor.skeleton: true
+      thor.villager: true
+      thor.cow: true
+      thor.pigman: true
+      thor.wither: true
+      thor.bats: true
+
   thor.lightning:
     description: Allows user to use hammer to throw lightning
     default: op
@@ -31,7 +44,10 @@ permissions:
     description: Allows user to use hammer to start fires remotely
     default: op
   thor.fireball:
-    description: Allows user to use hammer to throw fireballs or napalm (small fireballs)
+    description: Allows user to use hammer to throw fireballs
+    default: op
+  thor.napalm:
+    description: Allows users to use hammer to throw napalm (small fireballs)
     default: op
   thor.wolves:
     description: Allows user to use hammer to spawn wolves
@@ -42,6 +58,36 @@ permissions:
   thor.explode:
     description: Allows user to use hammer to trigger explosions
     default: op
+  thor.creeper:
+    description: Allows user to use hammer to spawn creepers
+    default: op
+  thor.cow:
+    description: Allows user to use hammer to spawn cows
+    default: op
+  thor.zombie:
+    description: Allows user to use hammer to spawn zombies
+    default: op
+  thor.enderman:
+    description: Allows user to use hammer to spawn endermen
+    default: op
+  thor.dragon:
+    description: Allows user to use hammer to spawn an ender dragon
+    default: op
+  thor.skeleton:
+    description: Allows user to use hammer to spawn skeletons
+    default: op
+  thor.villager:
+    description: Allows user to use hammer to spawn villagers
+    default: op
+  thor.pigman:
+    description: Allows user to spawn zombie pigmen
+    default: op
+  thor.wither:
+    description: Allows user to spawn a wither
+    default: op
+  thor.bats:
+    description: Allows user to spawn bats
+    default: op
   thor.clear:
     description: Allows user to reset all users' Thor powerss
     default: op
@@ -51,6 +97,9 @@ permissions:
   thor.delete:
     description: Allows user to delete a block from a distance
     default: op
+    
 #  thor.power:
+    
 #    description: Allows user to toggle redstone power 
+    
 #    default: op

@@ -1,60 +1,117 @@
-Wand:
-  itemID: 275
+# Defaults for Thor plugin configuration version 4.0
+# 27 Oct 2013 : Added missing powers, and 3 new ones; 
+#               Added item names of former defaults
+
+Hammer:
+#  itemID: 275
+  item: STONE_AXE
   leftclick: false
 
+Generic:
+  enableDurability: true
+  enableCooldown: true
+  enableTargeting: false
+  enableCrafting: true
+  
 wolves:
-  durability: 6
-  cooldown: 0
-  itemID: 0
+  durability: 4
+  cooldown: 2
+#  itemID: 0
+#  item: IRON_HOE
   range: 256
   quantity: 2
+  targetingRange: 5
 creeper:
   durability: 10
-  cooldown: 0
-  itemID: 0
+  cooldown: 5
+#  itemID: 0
+#  item: DIAMOND_HOE
   range: 256
   quantity: 1
+  targetingRange: 10
+zombie:
+  durability: 6
+  cooldown: 3
+  range: 256
+  quantity: 1
+enderman:
+  durability: 4
+  cooldown: 2
+  range: 256
+  quantity: 1
+  targetingRange: 10
+dragon:
+  durability: 50
+  cooldown: 25
+  range: 256
+  quantity: 1
+skeleton:
+  durability: 6
+  cooldown: 3
+  range: 256
+  quantity: 1
+villager:
+  durability: 1
+  cooldown: 0
+  range: 256
+  quantity: 1
+cow:
+  durability: 1
+  cooldown: 0
+  range: 256
+  quantity: 1
+pigman:
+  durability: 6
+  cooldown: 3
+  range: 256
+  quantity: 1
+wither:
+  durability: 20
+  cooldown: 10
+  range: 256
+  quantity: 1
+bats:
+  durability: 1
+  cooldown: 0
+  range: 256
+  quantity: 3
 fire:
   durability: 1
   cooldown: 0
-  itemID: 0
+#  item: WOOD_AXE
   range: 256
 napalm:
   durability: 2
-  cooldown: 0
-  itemID: 0
+  cooldown: 1
+#  item: STONE_SWORD
   range: 256
 fireball:
   durability: 4
-  cooldown: 0
-  itemID: 0
+  cooldown: 2
+#  item: IRON_SWORD
   range: 256
 teleport:
   durability: 1
   cooldown: 0
-  itemID: 0
+#  item: IRON_SPADE
   range: 256
 explode:
   durability: 12
-  cooldown: 0
-  itemID: 0
+  cooldown: 6
+#  item: DIAMOND_AXE
   range: 256
   power: 3.0
 lightning:
   durability: 6
-  cooldown: 0
-  itemID: 0
+  cooldown: 3
   range: 256
+#  item: IRON_AXE
 power:
   durability: 1
   cooldown: 0
-  itemID: 0
   range: 256
 delete:
   durability: 3
   cooldown: 1
-  itemID: 0
   range: 256
 
-DO_NOT_EDIT:
-  READY: true
