@@ -9,16 +9,22 @@
  *              Added cooldownEnabled global
  *              Added name and lore (i.e. instructions) to thorHammer, making dep on Bukkit 1.4.5 
  *              Integrated changes from "1.75" (3.1) from RjSowden.
+ * 01 Nov 2013 : Added configurable item meta. 
  */
 
 package sss.RjSowden.Thor;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Arrays;
+import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.material.MaterialData;
+import org.bukkit.material.Skull;
+import org.bukkit.SkullType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -27,6 +33,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.ChatColor;
@@ -46,8 +55,12 @@ public class Thor extends JavaPlugin {
 	static boolean durabilityEnabled;
 	public static boolean cooldownEnabled;
 	public static boolean targetingEnabled;
+	private ItemStack[] powerTool = new ItemStack [ThorPower.count];
+	private Recipe[] powerToolRecipe = new Recipe [ThorPower.count];
 	
 	public void onEnable(){ 
+		boolean writeDefault = false;
+		
 		log = this.getLogger();
 		if (getConfig().isString ("log_level")) {
 			Log_Level = getConfig().getString("log_level", "INFO"); // hidden config item
@@ -61,11 +74,12 @@ public class Thor extends JavaPlugin {
 		} else 
 			log.setLevel (Level.INFO);
 
-		this.reloadConfig();  // load any confg
-		this.getConfig();	  // get config to RAM, if any
-		getConfig().options().copyDefaults(true);
-		this.saveConfig();     // write config + defaults to disk
-		this.reloadConfig();
+		if ( !getDataFolder().exists() || !(new File (getDataFolder(), "config.yml").exists())) {
+			// Don't write defaults all the time as it erases comments in the file
+			writeDefault = true;
+			getConfig().options().copyDefaults(true);
+			log.info ("No config found in " + getDescription().getName() + "/; writing defaults");
+		}
 		
 		//log.info("THOR is loading...");
 		
@@ -96,8 +110,60 @@ public class Thor extends JavaPlugin {
 		targetingEnabled = getConfig().getBoolean("Generic.enableTargeting");
 		if (getConfig().getBoolean ("Generic.enableCrafting"))
 			addRecipes();
+			
+		if (writeDefault)
+			saveDefaultConfig();
+			
 		//log.info("THOR is Loaded");
 	}
+	
+    private static final HashMap<String, Material> altNames;
+    static
+    {
+        altNames = new HashMap<String, Material>();
+        altNames.put("GUNPOWDER", Material.SULPHUR);
+        altNames.put("WOOD_SHOVEL", Material.WOOD_SPADE);
+        altNames.put("STONE_SHOVEL", Material.STONE_SPADE);
+        altNames.put("IRON_SHOVEL", Material.IRON_SPADE);
+        altNames.put("GOLD_SHOVEL", Material.GOLD_SPADE);
+        altNames.put("DIAMOND_SHOVEL", Material.DIAMOND_SPADE); 
+        altNames.put("FIRECHARGE", Material.FIREBALL);
+        altNames.put("ENDER_EYE", Material.EYE_OF_ENDER);             
+
+		// Must call matchMaterialData for these        
+        altNames.put("WITHER_SKULL", Material.SKULL_ITEM);
+        altNames.put("CREEPER_HEAD", Material.SKULL_ITEM);
+        altNames.put("SKELETON_SKULL", Material.SKULL_ITEM);
+        altNames.put("PLAYER_HEAD", Material.SKULL_ITEM);
+        altNames.put("ZOMBIE_HEAD", Material.SKULL_ITEM);
+    }
+	private Material matchMaterial (String name) {
+		Material mat = Material.matchMaterial (name);
+		if (mat == null) {
+			name = name.toUpperCase();
+			
+			mat = altNames.get (name);
+			if (mat != null) {
+				log.config ("Matched alternative name '" + name + "' for " + mat);
+			}
+		}
+		return mat;
+	}
+	private MaterialData matchMaterialData (Material mat, String name) {
+		if (mat == Material.SKULL_ITEM) {
+			SkullType st = SkullType.SKELETON; // zero
+			try {
+				st = SkullType.valueOf (name.substring (0,name.indexOf ('_')));
+			} catch (Exception e) {
+				log.warning ("unrecognized skull type: '" + name + "'");
+			}
+			Skull skullData = new Skull (Material.SKULL_ITEM, (byte)st.ordinal());
+			return skullData;
+		}
+		
+		return null;
+	}
+
 	
 	// Attempts to match config string to a Material type. 
 	//   If not, tries to match to <configstring>+"ID" using deprecated calls
@@ -106,9 +172,9 @@ public class Thor extends JavaPlugin {
 		Material mat = null;
 		
 		if (getConfig().isSet (configPath)) {
-			mat = Material.matchMaterial (getConfig().getString (configPath));
+			mat = matchMaterial (getConfig().getString (configPath));
 			if (mat == null) {
-				log.warning (configPath + ": unknown Material string '" + getConfig().getString (configPath));
+				log.warning (configPath + ": unknown Material string '" + getConfig().getString (configPath) + "'. Refer to http://bit.ly/1hjNiY7");
 			}
 		}
 		// Else try the old ID form
@@ -143,14 +209,16 @@ public class Thor extends JavaPlugin {
 	// returns true if item matches required characteristics of item for that power
 	// Must match ID, enchant, name, have lore
 	boolean matchesPowerWand (ThorPower power, ItemStack item) {
-		if (item.getType() != getItemType (power.getCommand() + ".item"))
+		if (item == null || powerTool [power.ordinal()] == null ||
+			item.getType() != powerTool [power.ordinal()].getType())
 			return false;
 
-		ItemMeta meta = loadWandMeta (power); 
+		ItemMeta meta = powerTool [power.ordinal()].getItemMeta(); 
 		if (meta != null) {
 			ItemMeta testMeta = item.getItemMeta();
 			
-			if (! meta.getDisplayName().equals (testMeta.getDisplayName()))
+			if (meta.hasDisplayName() && 
+				(!testMeta.hasDisplayName() || ! meta.getDisplayName().equals (testMeta.getDisplayName())) )
 				return false;
 			if (meta.hasLore() && !testMeta.hasLore())
 				return false;
@@ -164,16 +232,18 @@ public class Thor extends JavaPlugin {
 		}
 		return true;
 	}
-	// Returns ItemMeta of provided Power from Configuration data.
-	//  Maybe should pre-load into an array so that don't have to build each time?
-	//  Pre-load ItemStack or ItemMeta? Easily could be itemStack 
-	private ItemMeta loadWandMeta (ThorPower power) {
-		ItemStack item = new ItemStack (getItemType (power.getCommand() + ".item"));
-		ItemMeta meta = item.getItemMeta();  // get empty copy of an ItemMeta
+	// Returns Item of provided Power from Configuration data.
+	//  if no item configured, returns null
+	private ItemStack loadWand (ThorPower power) {
+		Material itemType = getItemType (power.getCommand() + ".item");
+		if (itemType == null)
+			return null;
+		ItemStack item = new ItemStack (itemType);
 		
 		ConfigurationSection metaConfig = getConfig().getConfigurationSection (power.getCommand() + ".meta");
 		if (metaConfig == null)
-			return null;
+			return item;
+		ItemMeta meta = item.getItemMeta();  // get empty copy of an ItemMeta
 		meta.setDisplayName (metaConfig.getString ("name"));
 		meta.setLore (metaConfig.getStringList ("lore"));
 		
@@ -182,7 +252,7 @@ public class Thor extends JavaPlugin {
 			for (String enchantString : metaConfig.getConfigurationSection ("enchants").getKeys (false /*depth*/)) {
 				Enchantment enchant = Enchantment.getByName (enchantString);
 				if (enchant == null) {
-					log.warning ("Unknown enchantment: " + enchantString + ". See http://jd.bukkit.org/rb/apidocs/org/bukkit/enchantments/Enchantment.html");
+					log.warning ("Unknown enchantment: " + enchantString + ". Refer to http://bit.ly/HxVS58");
 				} else {
 					int level = metaConfig.getInt ("enchants." + enchantString);
 					if (level < 1) {
@@ -193,14 +263,142 @@ public class Thor extends JavaPlugin {
 				}
 			}
 		}
-		return meta;
+		item.setItemMeta (meta);
+		return item;
+	}
+	// Allow for shaped or shapeless (quantities of material)
+	private Recipe loadRecipe (ThorPower power) {
+		ConfigurationSection rcpCfg = getConfig().getConfigurationSection (power.getCommand() + ".recipe");
+		ItemStack tool = powerTool [power.ordinal()];
+		Recipe r = null;
+		String powerName = power.getCommand();
+		
+		if (rcpCfg == null || tool == null)
+			return null;
+		
+		// Build shaped recipe
+		if (rcpCfg.isSet ("shape")) 
+		{
+			ShapedRecipe sr = new ShapedRecipe (tool);
+			/** Format: 
+			 * ingredients:
+			 *   DIRT: A
+			 *   REDSTONE: B
+			 *   DIAMOND: C
+			 * shape:
+			 *   - "AAA"
+			 *   - " C "
+			 *   - "BBB"
+			 */
+			// Must load shape first, since setIngredient checks against it.
+			List<String> format = getConfig().getStringList (power.getCommand() + ".recipe.shape");
+			if (format.size() != 3) {
+				log.warning (powerName + ".recipe.shape must be 3 strings of 3 characters");
+				return null;
+			}
+			for (String f : format) {
+				if (f.length() != 3) {
+					log.warning (powerName + ".recipe.shape must be 3 strings of 3 characters");
+					return null;
+				}
+			}
+			sr.shape(format.toArray(new String[3]));
+			 			
+			// Get ingredients
+			if ( !rcpCfg.isSet ("ingredients")) {
+				log.warning (powerName + ".recipe.shape.ingredients not set");
+				return null;
+			}
+			for (String matString : rcpCfg.getConfigurationSection ("ingredients").getKeys(/*deep=*/false)) {
+				Material mat = matchMaterial (matString);
+				MaterialData data = null;
+				
+				if (mat == null) {
+					log.warning (powerName + ".recipe.shape.ingredients: '" + matString + "' unrecognized Material. Refer to http://bit.ly/1hjNiY7");
+					continue;
+				}
+				data = matchMaterialData (mat, matString);
+				
+				String letter = rcpCfg.getConfigurationSection ("ingredients").getString (matString);
+				if (letter.length() != 1) {
+					log.warning (powerName + ".recipe.shape.ingredients." + matString + " unrecognized letter '" + letter + "'");
+					continue;
+				}
+				// Check that each char is in the shape; if not, it's OK; we can build
+				String[] shape= sr.getShape();
+				String fullRCP = shape[0].concat (shape[1]).concat (shape [2]);
+				if ( !(fullRCP.indexOf (letter) != -1)) {
+						log.warning (powerName + ".recipe.ingredients contains symbol '" + letter + "' not in .shape");
+				}				
+
+				if (data != null) {
+					sr.setIngredient (letter.charAt(0), data);
+					log.config ("Recognized special material: " + data);
+				} else
+					sr.setIngredient (letter.charAt(0), mat);
+			}
+			// Check that each char in Shape is listed as an ingredient
+			for (String row : format) 
+				for (char c : row.toCharArray()) 
+					if (c != ' ' && sr.getIngredientMap ().get (c) == null) {
+						log.warning (powerName + ".recipe.shape contains unlisted ingredient '" + c + "'");
+						return null;  // can't build it
+					}
+			r = sr;
+		}
+		else if (rcpCfg.isSet ("quantities")) {
+			ShapelessRecipe slr = new ShapelessRecipe (tool);
+			MaterialData data = null;
+
+			/** Format: 
+			 * quantities:
+			 *   DIRT: 2
+			 *   REDSTONE: 1
+			 *   DIAMOND: 2
+			 */
+			int totalAmount = 0;
+			for (String matString : rcpCfg.getConfigurationSection ("quantities").getKeys(/*deep=*/false)) {
+				Material mat = matchMaterial (matString);
+				if (mat == null) {
+					log.warning (powerName + ".recipe.quantities: '" + matString + "' unrecognized Material. Refer to http://bit.ly/1hjNiY7");
+					continue;
+				}
+				data = matchMaterialData (mat, matString);
+
+				int amount = rcpCfg.getConfigurationSection ("quantities").getInt (matString);
+				totalAmount += amount;
+				if (amount < 1 || amount > 9) {
+					log.warning (powerName + ".recipe.quantities." + matString + " unexpected amount '" + amount + "'");
+					continue;
+				}
+				else if (totalAmount > 9) {
+					log.warning (powerName + ".recipe.quantities: cannot have more than 9 ingredients");
+					continue;
+				}
+				if (data != null) {
+					slr.addIngredient (amount, data);
+					log.config ("Recognized special material: " + data);
+				} else
+					slr.addIngredient (amount, mat);
+			}
+			
+			r= slr;
+		} else {
+			log.warning (powerName + ".recipe must include either 'shape' or 'quantities' node");
+	 	}
+	 			
+	 	return r;
 	}
 
 	private void loadPowerConfig (String node) {
-		// this doesn't really do anything other than load into RAM
+		ThorPower p = ThorPower.getPower (node);
+
+		powerTool[p.ordinal()] = loadWand (p);	// to get any errors on startup	
+		powerToolRecipe [p.ordinal()] = loadRecipe(p);
+		
+		// rest doesn't really do anything
 		getConfig().getShortList (node + ".durability");  //casting impact to item durability
 		getConfig().getInt (node + ".cooldown");	//required cooldown period in seconds
-		getItemType (node + ".item");		
 		getConfig().getInt (node + ".range");		// how far can this be cast
 	}
 	
@@ -212,20 +410,16 @@ public class Thor extends JavaPlugin {
 		hammerRCP.setIngredient('C', Material.IRON_INGOT);
 		getServer().addRecipe(hammerRCP);
 		
-		/* Add recipes for lesser-powered (single-powered) items?, using easier core items:
-		 *  Teleport - ender eye
-		 *  Fire - blaze powder, fire aspect enchant
-		 *  Fireball - ghast tear, fire aspect enchant, L2
-		 *  explosion - wither skull, 
-		 *  napalm - fire charge (made by blaze powder, coal, gunpowder), fire aspect enchant		  
-		 *  Alternative shape for "easy" ingredients: shape(new String[] { "ABA", " C ", " C " }):
-			 *  Creeper - gunpowder x 5 
-			 *  wolf - bonemeal x 5
-			 *  lightning - redstone x 5 
-	     * Allow config to set not only item ID, but name, lore.
-	     *  Then to protect cheap manufacture of given item, only allow power when item has right name, enchant, (& lore?). 
-	     *  Future: create new items with custom image, ID, etc. Would have to be packaged with TexturePack.
-		 */
+		for (int i=0; i<powerToolRecipe.length; i++) {
+			Recipe r = powerToolRecipe[i];
+			if (r != null) {
+				getServer().addRecipe (r);
+				log.config ("Added recipe for " + ThorPower.getPower (i+1).getCommand() + " tool (" + 
+							(powerTool[i].getItemMeta().hasDisplayName() ? 
+							powerTool[i].getItemMeta().getDisplayName() : powerTool[i].getType() ) + ")" );
+			}
+		}
+	     //  Future: create new items with custom image, ID, etc. Would have to be packaged with TexturePack.
 	}
 
 	@Override

@@ -4,10 +4,13 @@
  * History
  * 02 Nov 2012: Added DELETE, POWER. Collapsed WOLF & CREEPER.
  * 28 Nov 2012: Added CREEPER, SMALLFIREBALL powers, rewrote FIRE and FIREBALL
+ * 		    RJ: Added a master command under GENERIC to switch it off/on should the user want to :)
  * 24 Oct 2013: Began removing deprecated Bukkit calls. 
  *              Integrated changes from "1.75" (3.1) from RjSowden, fixing durabilityEnabled check.
  *              Added PigZombie, made angry; 
  *              added 0.0 format for cooldown, added cooldownEnabled check.
+ * 01 Nov 2013: allow for DURABILITY enchantment reducing usage; 
+ * 
  */
 
 package sss.RjSowden.Thor;
@@ -16,6 +19,7 @@ import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Cow;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EnderDragon;
@@ -58,6 +62,7 @@ import sss.RjSowden.Thor.ThorPower;
 public class ThorPlayerListener implements Listener{
 	private final Thor plugin;
 	private NumberFormat nf;
+	private static Random rand = new Random(); 
 
 	public ThorPlayerListener (Thor instance)
 	{
@@ -91,13 +96,12 @@ public class ThorPlayerListener implements Listener{
 			}
 		}
 	}
-	
+
 	// Below function could be moved to ThorPower completely, removing "mode" param, but is it worth it?
 	// RJ: Probs not, no worries.
 	void usePower (Player player, ThorPower mode) {
 		Location loc;
 		int distance = plugin.getConfig().getInt (mode.getCommand() + ".distance");
-		Random rand = new Random(); //randomize locations so mobs don't mirror one another.
 
 		// Check cooldown
 		long cooldown = 1000 * plugin.getConfig().getInt (mode.getCommand() + ".cooldown");
@@ -109,40 +113,19 @@ public class ThorPlayerListener implements Listener{
 									" seconds before casting again");
 				return;
 			}
-		}	// write below all the time just so we can keep track of players using Thor.
-		plugin.lastTimes.put (player, Long.valueOf(System.currentTimeMillis()));					
+		}	
+		// Store last use at end of this function, in case use fails.
 		
 		// Impact Durability
 		short durabilityImpact = (short) plugin.getConfig().getInt (mode.getCommand() + ".durability");
-		// Should always get one based on having default values
-		// RJ: Added a master command under GENERIC to switch it off/on should the user want to :)
-		if (plugin.durabilityEnabled && durabilityImpact > 0) {
-			loc = player.getLocation();
-			ItemStack inHand = player.getItemInHand();
-			
-			int finalD = inHand.getDurability() + durabilityImpact;
-			if (finalD >= inHand.getType().getMaxDurability())
-			{  // for now, use durability of underlying item. Could make configurable for Thor's hammer
-			   Location eye = player.getEyeLocation();
-			   String itemName = inHand.getItemMeta().hasDisplayName() ?
-			   		inHand.getItemMeta().getDisplayName() : null; // "the " + inHand.getType();
-			   
-			   if (inHand.getAmount() == 1)
-			   		player.setItemInHand(null);
-			   	else 
-			   		inHand.setAmount (inHand.getAmount() - 1);
-			   		
-			   loc.getWorld().playEffect (eye, Effect.SMOKE, 0);
-			   loc.getWorld().playSound (loc, Sound.ITEM_BREAK, 5F, 2F/*pitch*/);
-			   if (itemName != null) {  // Only play sound and sendMessage if "magical"
-				   loc.getWorld().playSound (loc, Sound.AMBIENCE_THUNDER, 1F, 0.5F/*pitch*/);
-				   player.sendMessage ("Amazingly, " + ChatColor.LIGHT_PURPLE + itemName + ChatColor.RESET + " disappears with a puff of smoke");
-			   }
-			}
-			else
-				player.getItemInHand().setDurability ((short)finalD);
+		// Take into account Durability Enchantment
+		ItemStack inHand = player.getItemInHand();
+		int durabilityEnchant = inHand.getItemMeta().getEnchantLevel (Enchantment.DURABILITY);
+		if (durabilityEnchant > 0 && 100/(durabilityEnchant + 1) <= rand.nextInt(100)) {
+			durabilityImpact = 0;
+			plugin.log.fine ("Durability enchantment saved wear impact on " + mode + " power use");
 		}
-
+			
 		switch (mode) {	
 			case LIGHTNING:
 				loc = player.getTargetBlock(null, distance).getLocation();
@@ -262,8 +245,15 @@ public class ThorPlayerListener implements Listener{
 			
 			case TELEPORT:
 				loc = player.getTargetBlock(null, distance).getLocation();
-				loc.add(0, 3, 0);
-				player.teleport(loc);
+				loc.add(0, 2, 0);
+				// Error checking: when clicking in air, TP to Y=3 in earth! 
+				if (loc.getBlock().getType().isSolid() || loc.clone().add (0,1,0).getBlock().getType().isSolid()) {
+					player.sendMessage (ChatColor.RED + "[Thor] will not teleport you to your death into a solid");
+					return;
+				} else {
+					player.teleport(loc);
+					plugin.log.fine (player.getName() + " teleported to " + loc);
+				}
 				break;
 	
 			case FIREBALL:
@@ -293,7 +283,7 @@ public class ThorPlayerListener implements Listener{
 				
 				// Should try to burn an Entity if that is targeted, but that's difficult, and SMALLFIREBALL 
 				//  does the trick, so not worth fixing. 
-				return;     
+				break;     
 				
 			case DELETE:
 				loc = player.getTargetBlock(null, distance).getLocation();
@@ -334,5 +324,41 @@ public class ThorPlayerListener implements Listener{
 				break;
 				
 		}	
+		// write below all the time just so we can keep track of players using Thor.
+		plugin.lastTimes.put (player, Long.valueOf(System.currentTimeMillis()));					
+
+		
+		// Impact only if power succeeded.
+		if (plugin.durabilityEnabled && durabilityImpact > 0) {
+			loc = player.getLocation();
+			
+			int finalD = inHand.getDurability() + durabilityImpact;
+			if (finalD >= inHand.getType().getMaxDurability())
+			{  
+			   Location eye = player.getEyeLocation();
+			   String itemName = inHand.getItemMeta().hasDisplayName() ?
+			   		inHand.getItemMeta().getDisplayName() : null; // "the " + inHand.getType();
+			   
+			   if (inHand.getAmount() == 1) {
+				// BUG: Setting null to an enchanted sword, it still remains in player's hand. 
+			   		player.setItemInHand(null);
+			   		plugin.log.fine ("Set null to hand, now: " + player.getItemInHand ());
+			   	}
+			   	else {
+			   		inHand.setAmount (inHand.getAmount() - 1);
+					// plugin.log.fine ("Reduced count of magic item to " + inHand.getAmount());
+				}
+			   		
+			   loc.getWorld().playEffect (eye, Effect.SMOKE, 0);
+			   loc.getWorld().playSound (loc, Sound.ITEM_BREAK, 5F, 2F/*pitch*/);
+			   if (itemName != null) {  // Only play sound and sendMessage if "magical"
+				   loc.getWorld().playSound (loc, Sound.AMBIENCE_THUNDER, 1F, 0.5F/*pitch*/);
+				   player.sendMessage ("Amazingly, " + ChatColor.LIGHT_PURPLE + itemName + ChatColor.RESET + " disappears with a puff of smoke");
+			   }
+			}
+			else
+				player.getItemInHand().setDurability ((short)finalD);
+		}
+		
 	}
 }

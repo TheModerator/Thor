@@ -1,6 +1,11 @@
-# Defaults for Thor plugin configuration version 4.0
+# Defaults for Thor plugin configuration version 4.1
 # 27 Oct 2013 : Added missing powers, and 3 new ones; 
 #               Added item names of former defaults
+# List of Materials here: http://bit.ly/1hjNiY7
+# List of Enchantments here:  http://bit.ly/HxVS58
+#
+# If durability impact, make sure item is a tool or weapon, or it will get only one use
+#   For idea of how to estimate # of uses, refer to http://minecraft.gamepedia.com/Durability#Tool_durability 
 
 Hammer:
 #  itemID: 275
@@ -14,26 +19,64 @@ Generic:
   enableCrafting: true
   
 wolves:
-  durability: 4
+  durability: 0
   cooldown: 2
-#  itemID: 0
-#  item: IRON_HOE
   range: 256
   quantity: 2
-  targetingRange: 5
+  targetingRange: 10
+  item: BONE
+  meta:
+    name: Timber
+    enchants:
+      LOOT_BONUS_MOBS: 2
+    lore:
+    - right-click to spawn wolves
+    - infinite uses
+  recipe:
+    ingredients:
+      BONE: C
+      REDSTONE: B
+      ROTTEN_FLESH: A
+    shape:
+    - AAA
+    - BCB
+    - BCB
 creeper:
   durability: 10
   cooldown: 5
-#  itemID: 0
-#  item: DIAMOND_HOE
   range: 256
   quantity: 1
   targetingRange: 10
+# Get 6 casts out of wood hoe with durability 10. 
+  item: WOOD_HOE
+  meta:
+    name: Kermit
+    enchants:
+      LOOT_BONUS_MOBS: 2
+      DURABILITY: 1
+    lore:
+    - right-click to spawn creepers
+  recipe:
+    quantities:
+      GUNPOWDER: 5
+      REDSTONE: 4
 zombie:
   durability: 6
   cooldown: 3
   range: 256
   quantity: 1
+  item: WOOD_SHOVEL
+  meta:
+    name: Brains!
+    enchants:
+      DURABILITY: 1
+      DAMAGE_UNDEAD: 1
+    lore:
+    - right-click to spawn zombies
+  recipe:
+    quantities:
+      ROTTEN_FLESH: 5
+      REDSTONE: 4
 enderman:
   durability: 4
   cooldown: 2
@@ -74,38 +117,120 @@ bats:
   durability: 1
   cooldown: 0
   range: 256
-  quantity: 3
+  quantity: 2
 fire:
   durability: 1
   cooldown: 0
-#  item: WOOD_AXE
-  range: 256
+  range: 100
+  item: BLAZE_POWDER
+  # Should allow fire starting by right-clicking blaze powder
+  
+# Launches fire charges, not to be confused with ghast fireballs
 napalm:
   durability: 2
-  cooldown: 1
-#  item: STONE_SWORD
-  range: 256
+  cooldown: 0
+  item: GOLD_SHOVEL
+  meta:
+    name: Kilgore
+    enchants:
+      FIRE_ASPECT : 2
+    lore:
+    - right-click to throw fire charge
+  recipe:
+    quantities:
+      FIRECHARGE: 6
+      GOLD_NUGGET: 3
+      
 fireball:
+# Got 16 uses out of this config
   durability: 4
   cooldown: 2
-#  item: IRON_SWORD
   range: 256
+  item: GOLD_HOE
+  meta:
+    name: pyr thalássion
+    enchants:
+      FIRE_ASPECT: 2
+      DURABILITY: 1
+    lore:
+    - right-click to throw fireball
+  recipe:
+    ingredients:
+      GHAST_TEAR: A
+      GOLD_INGOT: B
+    shape:
+      - ' A '
+      - ' B '
+      - ' B '
+
+# Good usage; repairable
 teleport:
-  durability: 1
-  cooldown: 0
-#  item: IRON_SPADE
-  range: 256
+  durability: 7
+  cooldown: 2
+  range: 100
+  item: IRON_HOE
+  meta:
+    name: Zzyzzx
+    enchants:
+      KNOCKBACK : 1
+    lore:
+    - right-click to teleport
+    - max range 100
+  recipe:
+    ingredients:
+      IRON_INGOT: B
+      ENDER_PEARL: A
+    shape:
+    - ' A '
+    - ' B '
+    - ' B '
+# Got 15 uses; good enough
 explode:
-  durability: 12
+  durability: 8
   cooldown: 6
-#  item: DIAMOND_AXE
-  range: 256
+  range: 150
   power: 3.0
+  item: GOLD_PICKAXE
+  meta:
+    name: Crazy Ivan
+    enchants:
+      LOOT_BONUS_BLOCKS: 2
+      FIRE_ASPECT: 1
+      DURABILITY: 3
+    lore:
+    - right-click to explode target
+    - max range 150
+  recipe:
+    ingredients:
+      WITHER_SKULL: A
+      GOLD_INGOT: B
+    shape:
+    - ' A '
+    - ' B '
+    - ' B '
+  
+# Got 17 casts with this
 lightning:
   durability: 6
   cooldown: 3
   range: 256
-#  item: IRON_AXE
+  item: GOLD_AXE
+  meta:
+    name: Steropes
+    enchants:
+      FIRE_ASPECT: 1
+      DURABILITY: 3
+    lore:
+    - right-click to call lightning
+  recipe:
+    ingredients:
+      GLOWSTONE: D
+      REDSTONE: A
+    shape:
+    - AAA
+    - ADA
+    - AAA
+
 power:
   durability: 1
   cooldown: 0
@@ -114,4 +239,5 @@ delete:
   durability: 3
   cooldown: 1
   range: 256
+  itemID: 1
 

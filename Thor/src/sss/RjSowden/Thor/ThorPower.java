@@ -68,6 +68,7 @@ public enum ThorPower {
 
 	boolean isCreature() { return this.creature != null; }
 	
+	public static final int count = values().length;
 
 	public static String commandList = ""; 
 	static {
@@ -80,7 +81,7 @@ public enum ThorPower {
 	// Not using this static array currently. Point was to allow
 	//  switch (variable) case ThorPower.getPower (ThorPower.FIRE.getValue())
 	//  but that is really ugly
-	private final static ThorPower byId[] = new ThorPower[8 + 1 /* zero unused */];
+	private final static ThorPower byId[] = new ThorPower[count + 1 /* zero unused */];
     static {  
 		for (ThorPower p : values()) {
 			if (byId.length > p.power)
@@ -92,5 +93,11 @@ public enum ThorPower {
 			return byId [id];
 		else
 			return null;
+	}
+	public static ThorPower getPower (String name) {
+		for (ThorPower p : values()) 
+			if (p.name.equals (name))
+				return p;
+		return null;
 	}
 }
