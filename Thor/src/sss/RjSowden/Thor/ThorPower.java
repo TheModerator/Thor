@@ -3,11 +3,14 @@
  * History
  *  24 Oct 2013:  Integrated changes from "1.75" (3.1) from RjSowden;
  *				  Added PIGZOMBIE, WITHER, BAT; added LivingEntity.class
+ *  25 Nov 2013 : Added WITCH, SPIDERs, BLAZE.
  */
 
 package sss.RjSowden.Thor;
 
 import org.bukkit.entity.Bat;
+import org.bukkit.entity.Blaze;
+import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Cow;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EnderDragon;
@@ -17,10 +20,12 @@ import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.Spider;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Villager;
+import org.bukkit.entity.Witch;
 import org.bukkit.entity.Wither;
 import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Zombie;
@@ -44,8 +49,12 @@ public enum ThorPower {
 	COW(16,"cow", "spawn cows", Cow.class),
 	PIGZOMBIE (17, "pigman", "spawn zombie pigmen", PigZombie.class),
 	WITHER (18, "wither", "spawn a wither", Wither.class), 
-	BAT (19, "bats", "spawn bats", Bat.class);
-
+	BAT (19, "bats", "spawn bats", Bat.class),
+	WITCH (20, "witch", "spawn a witch", Witch.class),
+	SPIDER (21, "spider", "spawn a spider", Spider.class),
+	CAVESPIDER (22, "cavespider", "spawn a cave spider", CaveSpider.class),
+	BLAZE (23, "blaze", "spawn a blaze", Blaze.class);
+	
 	private final int power;
 	private final String name;
 	private final String phrase;

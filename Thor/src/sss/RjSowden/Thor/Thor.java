@@ -10,6 +10,7 @@
  *              Added name and lore (i.e. instructions) to thorHammer, making dep on Bukkit 1.4.5 
  *              Integrated changes from "1.75" (3.1) from RjSowden.
  * 01 Nov 2013 : Added configurable item meta. 
+ * 25 Nov 2013 : Use new MaterialDataStringer class.
  */
 
 package sss.RjSowden.Thor;
@@ -21,13 +22,13 @@ import java.util.logging.Logger;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
-import org.bukkit.material.Skull;
-import org.bukkit.SkullType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -38,9 +39,8 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.ChatColor;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ShapedRecipe;
+
+import com.yahoo.phil_work.MaterialDataStringer;
 
 public class Thor extends JavaPlugin {
 	
@@ -117,54 +117,6 @@ public class Thor extends JavaPlugin {
 		//log.info("THOR is Loaded");
 	}
 	
-    private static final HashMap<String, Material> altNames;
-    static
-    {
-        altNames = new HashMap<String, Material>();
-        altNames.put("GUNPOWDER", Material.SULPHUR);
-        altNames.put("WOOD_SHOVEL", Material.WOOD_SPADE);
-        altNames.put("STONE_SHOVEL", Material.STONE_SPADE);
-        altNames.put("IRON_SHOVEL", Material.IRON_SPADE);
-        altNames.put("GOLD_SHOVEL", Material.GOLD_SPADE);
-        altNames.put("DIAMOND_SHOVEL", Material.DIAMOND_SPADE); 
-        altNames.put("FIRECHARGE", Material.FIREBALL);
-        altNames.put("ENDER_EYE", Material.EYE_OF_ENDER);             
-
-		// Must call matchMaterialData for these        
-        altNames.put("WITHER_SKULL", Material.SKULL_ITEM);
-        altNames.put("CREEPER_HEAD", Material.SKULL_ITEM);
-        altNames.put("SKELETON_SKULL", Material.SKULL_ITEM);
-        altNames.put("PLAYER_HEAD", Material.SKULL_ITEM);
-        altNames.put("ZOMBIE_HEAD", Material.SKULL_ITEM);
-    }
-	private Material matchMaterial (String name) {
-		Material mat = Material.matchMaterial (name);
-		if (mat == null) {
-			name = name.toUpperCase();
-			
-			mat = altNames.get (name);
-			if (mat != null) {
-				log.config ("Matched alternative name '" + name + "' for " + mat);
-			}
-		}
-		return mat;
-	}
-	private MaterialData matchMaterialData (Material mat, String name) {
-		if (mat == Material.SKULL_ITEM) {
-			SkullType st = SkullType.SKELETON; // zero
-			try {
-				st = SkullType.valueOf (name.substring (0,name.indexOf ('_')));
-			} catch (Exception e) {
-				log.warning ("unrecognized skull type: '" + name + "'");
-			}
-			Skull skullData = new Skull (Material.SKULL_ITEM, (byte)st.ordinal());
-			return skullData;
-		}
-		
-		return null;
-	}
-
-	
 	// Attempts to match config string to a Material type. 
 	//   If not, tries to match to <configstring>+"ID" using deprecated calls
 	//   Returns: configured Material or default; can be null
@@ -172,7 +124,9 @@ public class Thor extends JavaPlugin {
 		Material mat = null;
 		
 		if (getConfig().isSet (configPath)) {
-			mat = matchMaterial (getConfig().getString (configPath));
+			// Don't call matchMaterialData because at moment don't think users will want to use: 
+			//  skulls, wool, grass, sandstone, eggs, dye as the item "tool".
+			mat = MaterialDataStringer.matchMaterial (getConfig().getString (configPath));
 			if (mat == null) {
 				log.warning (configPath + ": unknown Material string '" + getConfig().getString (configPath) + "'. Refer to http://bit.ly/1hjNiY7");
 			}
@@ -310,14 +264,12 @@ public class Thor extends JavaPlugin {
 				return null;
 			}
 			for (String matString : rcpCfg.getConfigurationSection ("ingredients").getKeys(/*deep=*/false)) {
-				Material mat = matchMaterial (matString);
-				MaterialData data = null;
+				MaterialData md = MaterialDataStringer.matchMaterialData (matString);
 				
-				if (mat == null) {
+				if (md == null) {
 					log.warning (powerName + ".recipe.shape.ingredients: '" + matString + "' unrecognized Material. Refer to http://bit.ly/1hjNiY7");
 					continue;
 				}
-				data = matchMaterialData (mat, matString);
 				
 				String letter = rcpCfg.getConfigurationSection ("ingredients").getString (matString);
 				if (letter.length() != 1) {
@@ -331,11 +283,7 @@ public class Thor extends JavaPlugin {
 						log.warning (powerName + ".recipe.ingredients contains symbol '" + letter + "' not in .shape");
 				}				
 
-				if (data != null) {
-					sr.setIngredient (letter.charAt(0), data);
-					log.config ("Recognized special material: " + data);
-				} else
-					sr.setIngredient (letter.charAt(0), mat);
+				sr.setIngredient (letter.charAt(0), md);
 			}
 			// Check that each char in Shape is listed as an ingredient
 			for (String row : format) 
@@ -358,12 +306,11 @@ public class Thor extends JavaPlugin {
 			 */
 			int totalAmount = 0;
 			for (String matString : rcpCfg.getConfigurationSection ("quantities").getKeys(/*deep=*/false)) {
-				Material mat = matchMaterial (matString);
-				if (mat == null) {
+				data = MaterialDataStringer.matchMaterialData (matString);
+				if (data == null) {
 					log.warning (powerName + ".recipe.quantities: '" + matString + "' unrecognized Material. Refer to http://bit.ly/1hjNiY7");
 					continue;
 				}
-				data = matchMaterialData (mat, matString);
 
 				int amount = rcpCfg.getConfigurationSection ("quantities").getInt (matString);
 				totalAmount += amount;
@@ -375,11 +322,7 @@ public class Thor extends JavaPlugin {
 					log.warning (powerName + ".recipe.quantities: cannot have more than 9 ingredients");
 					continue;
 				}
-				if (data != null) {
-					slr.addIngredient (amount, data);
-					log.config ("Recognized special material: " + data);
-				} else
-					slr.addIngredient (amount, mat);
+				slr.addIngredient (amount, data);
 			}
 			
 			r= slr;
