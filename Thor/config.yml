@@ -1,6 +1,7 @@
 # Defaults for Thor plugin configuration version 4.1
 # 27 Oct 2013 : Added missing powers, and 3 new ones; 
 #               Added item names of former defaults
+# 29 Nov 2013 : Added new power defaults: witch, blaze, spiders
 # List of Materials here: http://bit.ly/19sfyhe
 # List of Enchantments here:  http://bit.ly/HxVS58
 #
@@ -91,6 +92,26 @@ dragon:
 skeleton:
   durability: 6
   cooldown: 3
+  range: 256
+  quantity: 1
+witch:
+  durability: 0
+  cooldown: 2
+  range: 256
+  quantity: 1
+spider:
+  durability: 6
+  cooldown: 3
+  range: 256
+  quantity: 1
+cavespider:
+  durability: 7
+  cooldown: 4
+  range: 256
+  quantity: 1
+blaze:
+  durability: 10
+  cooldown: 6
   range: 256
   quantity: 1
 villager:

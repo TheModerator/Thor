@@ -1,13 +1,13 @@
 name: Thor
 main: sss.RjSowden.Thor.Thor
-version: 4.2
+version: 4.2.1
 authors: [Filbert66, RjSowden]
 description: Thor by Filbert66, started by RjSowden. Item-based godlike powers
 
 commands:
   Thor:
       description: /Thor <power>|stop|give|clear|list
-      usage: /Thor [lightning|fire|fireball|napalm|wolves|teleport|explode|creeper|cow|zombie|enderman|dragon|skeleton|villager|pigman|wither|bats|delete|stop|give|clear|list]
+      usage: /Thor [lightning|fire|fireball|napalm|wolves|teleport|explode|creeper|cow|zombie|enderman|dragon|skeleton|villager|pigman|wither|bats|[cave]spider|witch|blaze|delete|stop|give|clear|list]
 
 permissions:
   thor.*:
@@ -36,6 +36,10 @@ permissions:
       thor.pigman: true
       thor.wither: true
       thor.bats: true
+      thor.blaze: true
+      thor.spider: true
+      thor.cavespider: true
+      thor.witch: true
 
   thor.lightning:
     description: Allows user to use hammer to throw lightning
@@ -87,6 +91,18 @@ permissions:
     default: op
   thor.bats:
     description: Allows user to spawn bats
+    default: op
+  thor.witch:
+    description: Allows user to spawn a witch
+    default: op
+  thor.spider:
+    description: Allows user to spawn a spider
+    default: op
+  thor.cavespider:
+    description: Allows user to spawn a cave spider
+    default: op
+  thor.blaze:
+    description: Allows user to spawn a blaze
     default: op
   thor.clear:
     description: Allows user to reset all users' Thor powerss
