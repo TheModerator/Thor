@@ -2,6 +2,7 @@
 # 27 Oct 2013 : Added missing powers, and 3 new ones; 
 #               Added item names of former defaults
 # 29 Nov 2013 : Added new power defaults: witch, blaze, spiders
+#  8 Mar 2014 : Added groundpound
 # List of Materials here: http://bit.ly/19sfyhe
 # List of Enchantments here:  http://bit.ly/HxVS58
 #
@@ -252,10 +253,17 @@ lightning:
     - ADA
     - AAA
 
+groundpound:
+  durability: 8
+  cooldown: 0
+  range: 150
+  power: 5.0
+
 power:
   durability: 1
   cooldown: 0
   range: 256
+  
 delete:
   durability: 3
   cooldown: 1

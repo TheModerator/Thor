@@ -10,3 +10,29 @@ Thor/testprep
 Thor/update
 
 Thor/src/sss/RjSowden/Thor/old/*
+
+Thor/src/com/yahoo/phil_work/AntiFire/*
+
+Thor/src/com/yahoo/phil_work/extract.pl
+
+Thor/src/com/yahoo/phil_work/build
+
+Thor/src/com/yahoo/phil_work/MaterialDataList.txt
+
+Thor/src/com/yahoo/phil_work/MaterialDataList.yml
+
+Thor/src/com/yahoo/phil_work/BlockIdList.java
+
+Thor/src/com/yahoo/phil_work/BlockId.java
+
+Thor/config (Deborahs-Mac-mini's conflicted copy 2013-11-29).yml
+
+Thor/plugin (Deborahs-Mac-mini's conflicted copy 2013-11-29).yml
+
+Thor/src/com.old/*
+
+Thor/test/*
+
+.gitignore
+
+.gitignore

@@ -1,13 +1,13 @@
 name: Thor
 main: sss.RjSowden.Thor.Thor
-version: 4.3.1
+version: 4.4
 authors: [Filbert66, RjSowden]
 description: Thor by Filbert66, started by RjSowden. Item-based godlike powers
 
 commands:
   Thor:
       description: /Thor <power>|stop|give|clear|list
-      usage: /Thor [lightning|fire|fireball|napalm|wolves|teleport|explode|creeper|cow|zombie|enderman|dragon|skeleton|villager|pigman|wither|bats|[cave]spider|witch|blaze|delete|stop|give|clear|list]
+      usage: /Thor [lightning|fire|fireball|napalm|wolves|teleport|explode|groundpound|creeper|cow|zombie|enderman|dragon|skeleton|villager|pigman|wither|bats|[cave]spider|witch|blaze|delete|stop|give|clear|list]
 
 permissions:
   thor.*:
@@ -40,6 +40,7 @@ permissions:
       thor.spider: true
       thor.cavespider: true
       thor.witch: true
+      thor.groundpound: true
 
   thor.lightning:
     description: Allows user to use hammer to throw lightning
@@ -112,6 +113,10 @@ permissions:
     default: op
   thor.delete:
     description: Allows user to delete a block from a distance
+    default: op
+  thor.groundpound:
+    description: Allows user to perform groundpound
+    
     default: op
     
 #  thor.power:

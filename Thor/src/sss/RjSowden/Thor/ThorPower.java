@@ -4,6 +4,7 @@
  *  24 Oct 2013:  Integrated changes from "1.75" (3.1) from RjSowden;
  *				  Added PIGZOMBIE, WITHER, BAT; added LivingEntity.class
  *  25 Nov 2013 : Added WITCH, SPIDERs, BLAZE.
+ *  07 Mar 2014 : Added Groundpound
  */
 
 package sss.RjSowden.Thor;
@@ -53,7 +54,9 @@ public enum ThorPower {
 	WITCH (20, "witch", "spawn a witch", Witch.class),
 	SPIDER (21, "spider", "spawn a spider", Spider.class),
 	CAVESPIDER (22, "cavespider", "spawn a cave spider", CaveSpider.class),
-	BLAZE (23, "blaze", "spawn a blaze", Blaze.class);
+	BLAZE (23, "blaze", "spawn a blaze", Blaze.class),
+	GROUND_POUND (24, "groundpound", "pound the ground to make blocks and entities fly"),
+	;
 	
 	private final int power;
 	private final String name;
