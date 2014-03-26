@@ -3,6 +3,8 @@
 #               Added item names of former defaults
 # 29 Nov 2013 : Added new power defaults: witch, blaze, spiders
 #  8 Mar 2014 : Added groundpound
+# 25 Mar 2014 : Added arrows
+#
 # List of Materials here: http://bit.ly/19sfyhe
 # List of Enchantments here:  http://bit.ly/HxVS58
 #
@@ -270,3 +272,8 @@ delete:
   range: 256
   itemID: 1
 
+arrows:
+  durability: 4
+  cooldown: 0
+  range: 150
+  quantity: 5

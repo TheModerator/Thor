@@ -11,7 +11,7 @@
  *              added 0.0 format for cooldown, added cooldownEnabled check.
  * 01 Nov 2013: allow for DURABILITY enchantment reducing usage; 
  * 07 Mar 2014 : Added Groundpound
- * 
+ * 25 Mar 2014 : Added Arrows and sound for fireballs.
  */
 
 package sss.RjSowden.Thor;
@@ -21,7 +21,7 @@ import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import	org.bukkit.block.BlockState;
+import org.bukkit.block.BlockState;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
@@ -33,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.Effect;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.Sound;
 import org.bukkit.ChatColor;
 import org.bukkit.util.Vector;
@@ -252,13 +253,42 @@ public class ThorPlayerListener implements Listener{
 			case FIREBALL:
 			case SMALLFIREBALL:											
 				Fireball fireball;
-				if (mode == ThorPower.SMALLFIREBALL)
+				if (mode == ThorPower.SMALLFIREBALL) {
 					fireball= player.launchProjectile(SmallFireball.class);
-				else
+					player.playEffect (player.getLocation(), Effect.BLAZE_SHOOT, 1); // what is last param?
+				}
+				else {
 					fireball= player.launchProjectile(Fireball.class);
-	
+					player.playEffect (player.getLocation(), Effect.GHAST_SHOOT, 1); // what is last param?
+				}	
 				fireball.setShooter (player);
 				fireball.setFireTicks(9999);
+				break;
+			
+			case ARROWS:
+				int max = plugin.getConfig().getInt(mode.getCommand() + ".quantity");
+				final Player p = player;
+				for (int i =0; i < max; i++)
+				{
+					class ArrowShooter extends BukkitRunnable {
+						@Override
+						public void run() {
+							if ( !p.isOnline()) {
+								return;
+							}
+							// launch without Vector uses player cursor loc
+							Arrow a = p.launchProjectile (Arrow.class);
+							if (a != null) {
+								p.playEffect (p.getLocation(), Effect.BOW_FIRE, 1); // what is last param?
+								 a.setCritical (true);
+								 a.setShooter (p);	
+								 a.setBounce (false);						
+							}							
+						}
+					}
+					// by delaying, we avoid arrows hitting one another and introduce natural spread
+					(new ArrowShooter()).runTaskLater(this.plugin, i*10);	// 0.5s for each arrow
+				}
 				break;
 	
 			case FIRE:
