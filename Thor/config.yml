@@ -277,3 +277,20 @@ arrows:
   cooldown: 0
   range: 150
   quantity: 5
+  item: BOW
+  meta:
+    name: Brahmastra
+    enchants:
+      ARROW_DAMAGE: 1
+      ARROW_INFINITE: 1
+    lore:
+    - shoots multiple arrows with one click
+  recipe:
+    ingredients:
+      GLOWSTONE: D
+      BOW: B
+      REDSTONE: A
+    shape:
+    - ADA
+    - ABA
+    - ADA

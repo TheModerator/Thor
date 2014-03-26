@@ -41,6 +41,7 @@ import org.bukkit.World;
 
 import java.lang.Class;
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.lang.NoSuchMethodException;
 import java.lang.SecurityException;
 import java.util.Collection;
@@ -282,7 +283,16 @@ public class ThorPlayerListener implements Listener{
 								p.playEffect (p.getLocation(), Effect.BOW_FIRE, 1); // what is last param?
 								 a.setCritical (true);
 								 a.setShooter (p);	
-								 a.setBounce (false);						
+								 a.setBounce (false);				
+								 								 
+								try {
+									Method getHandleMethod = a.getClass().getMethod("getHandle");
+									Object handle = getHandleMethod.invoke(a);
+									Field fromPlayerField = handle.getClass().getField("fromPlayer");
+									fromPlayerField.setInt(handle, 2); // from infinite bow
+								} catch (Throwable ex) {
+									ex.printStackTrace(); // Up to you to ignore this, might break (gracefully-ish) on new MC versions.
+								}		
 							}							
 						}
 					}
